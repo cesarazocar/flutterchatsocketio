@@ -21,18 +21,22 @@ class ChatMessage extends StatelessWidget {
 
                   child: type == 'newuser'
                       ? new IconTheme(
-                          data: new IconThemeData(color: Colors.green),
+                          data: new IconThemeData(color: Colors.blue),
                           child: new Icon(Icons.info),
                         )
-                      : new Text(/*_username[0]*/ user[0] + user[1]))),
+                      : new Text(user[0] + user[1]))),
           new Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              new Text(/*_username*/ user,
-                  style: Theme.of(context).textTheme.subhead),
+              new Text(user,
+                  style: type == 'newuser'
+                      ? TextStyle(color: Colors.blue,fontWeight: FontWeight.bold)
+                      : Theme.of(context).textTheme.subhead),
               new Container(
                 margin: const EdgeInsets.only(top: 5.0),
-                child: new Text(text),
+                child: new Text(text,style: type == 'newuser'
+                    ? TextStyle(color: Colors.blue,fontWeight: FontWeight.bold)
+                    : Theme.of(context).textTheme.subhead),
               )
             ],
           )
