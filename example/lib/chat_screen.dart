@@ -16,14 +16,16 @@ class ChatScreenState extends State<ChatScreen> {
   bool _socketConnected = false;
 
   String actions = "Presione el boton verde para conectar";
+  Icon _actionIcon = new Icon(Icons.person_pin);
+  Color _actionIconColor = Colors.green[700];
   String username;
   SocketIO socketIO;
-  Icon action;
+
   bool _enabledUserText = false;
   bool _enabledText = false;
   String _inputHint = "Type a message";
-
-  Color _iconColor = Colors.blue;
+  bool typing = false;
+  Color _userIconColor = Colors.black12;
 
   void _onSwitched(bool value) => {
         setState(() => {_socketConnected = value}),
@@ -34,14 +36,22 @@ class ChatScreenState extends State<ChatScreen> {
             else
               {socketIO.connect()},
             setState(() {
+              actions = "Ingresa tu nombre de usuario";
+              _actionIconColor = Colors.green;
+              _actionIcon = new Icon(Icons.arrow_drop_up);
               _enabledUserText = true;
-              _iconColor = Colors.blue;
+              _userIconColor = Colors.blue;
+              _inputHint = "Type a message";
             })
           }
         else
           {
             socketIO.disconnect(),
-            _iconColor = Colors.white30,
+            _inputHint = "please connect first",
+            _actionIcon = new Icon(Icons.do_not_disturb),
+            _actionIconColor = Colors.red,
+            actions = "Estás desconectado.",
+            _userIconColor = Colors.black12,
             _enabledText = false,
             _enabledUserText = false
           },
@@ -52,7 +62,7 @@ class ChatScreenState extends State<ChatScreen> {
     super.initState();
   }
 
-  //imprimir mensaje en pantalla
+//imprimir mensajes en pantalla
   void _handleSubmitted(String text, String user, String type) {
     if (text.length > 0 && user.length > 0) {
       _textController.clear();
@@ -73,6 +83,7 @@ class ChatScreenState extends State<ChatScreen> {
     socketIO.subscribe("chat:newuser", _onNewUser);
     socketIO.subscribe("chat:message", _onMessage);
     socketIO.subscribe("chat:typing", _onTyping);
+    socketIO.subscribe("chat:closing", _onClosing);
     //connect socket
     socketIO.connect();
   }
@@ -81,7 +92,10 @@ class ChatScreenState extends State<ChatScreen> {
   _newUser(String user) async {
     if (user.length > 0) {
       socketIO.sendMessage("chat:newuser", "{username:" + user + "}");
-      setState(() => actions = 'Bienvenido al chat $user');
+      setState(() => {
+            actions = 'Bienvenido al chat $user',
+            _actionIcon = new Icon(Icons.person_pin)
+          });
     }
   }
 
@@ -102,13 +116,6 @@ class ChatScreenState extends State<ChatScreen> {
     String username = dataMap['username'];
 
     _handleSubmitted('Se ha conectado', username, "newuser");
-    /* usar para evento typing
-    setState(() {
-
-      actions = username + " is now connected";
-
-    });*/
-    //actions['username'];
   }
 
 //recibir mensaje emitido desde server
@@ -116,29 +123,33 @@ class ChatScreenState extends State<ChatScreen> {
     Map<String, dynamic> dataMapa = jsonDecode(data);
     String mensaje = dataMapa['message'];
     String username = dataMapa['username'];
-
     _handleSubmitted(mensaje, username, "message");
   }
 
   _onTyping(dynamic data) {
     Map<String, dynamic> dataMapa = jsonDecode(data);
-    String mensaje = dataMapa['message'];
     String username = dataMapa['username'];
-    bool typing = dataMapa['typing'];
-
+    typing = dataMapa['typing'];
     if (typing) {
+      print("$username is typing true");
       setState(() {
         actions = username + " is Typing";
+        _actionIcon = new Icon(Icons.textsms);
       });
     } else {
+      print("$username is typing false");
       setState(() {
         actions = "";
+        _actionIcon = new Icon(Icons.person_pin);
+        _actionIcon = null;
       });
     }
   }
 
-  _socketStatus(dynamic data) {
-    print("Socket status: " + data);
+  _onClosing(dynamic data) {
+    Map<String, dynamic> dataMapa = jsonDecode(data);
+    String username = dataMapa['username'];
+    _handleSubmitted("left the room", username, "closing");
   }
 
   _disconnectSocket() {
@@ -147,9 +158,8 @@ class ChatScreenState extends State<ChatScreen> {
     }
   }
 
+//user widget
   Widget _userComposerWidget() {
-    ThemeData theme = Theme.of(context);
-
     return new IconTheme(
       data: new IconThemeData(color: Colors.blue),
       child: new Container(
@@ -163,12 +173,11 @@ class ChatScreenState extends State<ChatScreen> {
               enabled: _enabledUserText,
               decoration:
                   new InputDecoration.collapsed(hintText: "your username here"),
-              //onSubmitted: _handleSubmitted,
             )),
             new Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: new IconTheme(
-                  data: new IconThemeData(color: _iconColor),
+                  data: new IconThemeData(color: _userIconColor),
                   child: new IconButton(
                       icon: new Icon(Icons.person_add),
                       onPressed: () {
@@ -177,7 +186,7 @@ class ChatScreenState extends State<ChatScreen> {
                           setState(() {
                             _enabledText = true;
                             _enabledUserText = !_enabledUserText;
-                            _iconColor = Colors.white30;
+                            _userIconColor = Colors.black12;
                           });
                           print("enabled user text state : ");
                         } else {
@@ -198,11 +207,10 @@ class ChatScreenState extends State<ChatScreen> {
     );
   }
 
+//action widget
   Widget _actionsComposerWidget() {
-    // widget actions
-
     return new IconTheme(
-      data: new IconThemeData(color: Colors.green[700]),
+      data: new IconThemeData(color: _actionIconColor),
       child: new Container(
         //input
 
@@ -211,8 +219,7 @@ class ChatScreenState extends State<ChatScreen> {
           children: <Widget>[
             new Container(
               margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: new Icon(Icons.person_pin),
-              //Icons.person_pin textsms
+              child: _actionIcon,
             ),
             new Flexible(
               child: new Text(actions, style: new TextStyle(fontSize: 20.0)),
@@ -223,9 +230,8 @@ class ChatScreenState extends State<ChatScreen> {
     );
   }
 
+//input widget
   Widget _textComposerWidget() {
-    //Input container
-
     return new IconTheme(
       data: new IconThemeData(color: Colors.green),
       child: new Container(
@@ -239,7 +245,7 @@ class ChatScreenState extends State<ChatScreen> {
                       new InputDecoration.collapsed(hintText: _inputHint),
                   controller: _textController,
                   enabled: _enabledText
-                  //onSubmitted: _handleSubmitted,
+
                   ),
             ),
             new Container(
