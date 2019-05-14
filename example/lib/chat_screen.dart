@@ -11,29 +11,40 @@ class ChatScreen extends StatefulWidget {
 
 class ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = new TextEditingController();
-  final TextEditingController mUserController = new TextEditingController();
+  TextEditingController mUserController = new TextEditingController();
   final List<ChatMessage> _messages = <ChatMessage>[];
-  bool _connected = false;
+  bool _socketConnected = false;
+
   String actions = "Presione el boton verde para conectar";
   String username;
   SocketIO socketIO;
   Icon action;
-  bool _enabledUserText = true;
+  bool _enabledUserText = false;
+  bool _enabledText = false;
+  String _inputHint = "Type a message";
+
+  Color _iconColor = Colors.blue;
 
   void _onSwitched(bool value) => {
-
-        setState(() => _connected = value),
-
-        if (_connected)
+        setState(() => {_socketConnected = value}),
+        if (_socketConnected)
           {
             if (socketIO == null)
               {_connectSocket01()}
             else
               {socketIO.connect()},
-          }else{
-          socketIO.disconnect()
-        },
-
+            setState(() {
+              _enabledUserText = true;
+              _iconColor = Colors.blue;
+            })
+          }
+        else
+          {
+            socketIO.disconnect(),
+            _iconColor = Colors.white30,
+            _enabledText = false,
+            _enabledUserText = false
+          },
       };
 
   @override
@@ -53,9 +64,6 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   _connectSocket01() {
-
-
-
     socketIO =
         SocketIOManager().createSocketIO("http://192.168.1.87:3000", "/");
 
@@ -71,11 +79,10 @@ class ChatScreenState extends State<ChatScreen> {
 
 //enviar usuario conectado a server
   _newUser(String user) async {
-
     if (user.length > 0) {
       socketIO.sendMessage("chat:newuser", "{username:" + user + "}");
+      setState(() => actions = 'Bienvenido al chat $user');
     }
-    setState(() => actions = 'Bienvenido al chat $user');
   }
 
 //enviar mensaje a server
@@ -92,7 +99,7 @@ class ChatScreenState extends State<ChatScreen> {
     print("se conecto un usuario: " + data);
 
     Map<String, dynamic> dataMap = jsonDecode(data);
-     String username = dataMap['username'];
+    String username = dataMap['username'];
 
     _handleSubmitted('Se ha conectado', username, "newuser");
     /* usar para evento typing
@@ -123,6 +130,10 @@ class ChatScreenState extends State<ChatScreen> {
       setState(() {
         actions = username + " is Typing";
       });
+    } else {
+      setState(() {
+        actions = "";
+      });
     }
   }
 
@@ -137,6 +148,8 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _userComposerWidget() {
+    ThemeData theme = Theme.of(context);
+
     return new IconTheme(
       data: new IconThemeData(color: Colors.blue),
       child: new Container(
@@ -147,46 +160,38 @@ class ChatScreenState extends State<ChatScreen> {
             new Flexible(
                 child: new TextField(
               controller: mUserController,
+              enabled: _enabledUserText,
               decoration:
                   new InputDecoration.collapsed(hintText: "your username here"),
               //onSubmitted: _handleSubmitted,
             )),
             new Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: new IconButton(
-                  icon: new Icon(Icons.person_add),
-                  onPressed: () {
-                    _newUser(mUserController.text);
-                  }),
-            ),
+                margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: new IconTheme(
+                  data: new IconThemeData(color: _iconColor),
+                  child: new IconButton(
+                      icon: new Icon(Icons.person_add),
+                      onPressed: () {
+                        if (_enabledUserText) {
+                          _newUser(mUserController.text);
+                          setState(() {
+                            _enabledText = true;
+                            _enabledUserText = !_enabledUserText;
+                            _iconColor = Colors.white30;
+                          });
+                          print("enabled user text state : ");
+                        } else {
+                          print("icon disabled");
+                        }
+                      }),
+                )),
             new Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: new Switch(
-                  value: _connected,
+                  value: _socketConnected,
                   activeColor: Colors.blue,
                   onChanged: _onSwitched,
-                )
-
-                /*
-              new IconButton(
-                  icon: new Icon(Icons.check_circle_outline),
-                  color: Colors.green,
-
-
-                  onPressed: () {
-                    if (socketIO == null) {
-                      _connectSocket01();
-                    } else {
-                      socketIO.connect();
-                    }
-                    setState(() {
-                      actions = "Bienvenido al chat " + username;
-                    });
-                  }
-
-
-                  ),*/
-                )
+                ))
           ],
         ),
       ),
@@ -230,11 +235,12 @@ class ChatScreenState extends State<ChatScreen> {
           children: <Widget>[
             new Flexible(
               child: new TextField(
-                decoration:
-                    new InputDecoration.collapsed(hintText: "Send a message"),
-                controller: _textController,
-                //onSubmitted: _handleSubmitted,
-              ),
+                  decoration:
+                      new InputDecoration.collapsed(hintText: _inputHint),
+                  controller: _textController,
+                  enabled: _enabledText
+                  //onSubmitted: _handleSubmitted,
+                  ),
             ),
             new Container(
               margin: const EdgeInsets.symmetric(horizontal: 4.0),
