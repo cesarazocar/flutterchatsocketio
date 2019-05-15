@@ -190,7 +190,7 @@ class ChatScreenState extends State<ChatScreen> {
                           });
                           print("enabled user text state : ");
                         } else {
-                          _showToast(context,"Connect first");
+                          _showSnackBar(context,"Connect first");
                           print("icon disabled");
                         }
                       }),
@@ -317,7 +317,7 @@ class ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _showToast(BuildContext context, String txt) {
+  void _showSnackBar(BuildContext context, String txt) {
     final scaffold = Scaffold.of(context);
     scaffold.showSnackBar(
       SnackBar(
