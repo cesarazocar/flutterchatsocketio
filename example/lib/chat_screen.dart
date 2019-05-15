@@ -15,9 +15,9 @@ class ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = <ChatMessage>[];
   bool _socketConnected = false;
 
-  String actions = "Presione el boton verde para conectar";
-  Icon _actionIcon = new Icon(Icons.person_pin);
-  Color _actionIconColor = Colors.green[700];
+  String actions = "Active el switch para conectar";
+  Icon _actionIcon = new Icon(Icons.cloud_off);
+  Color _actionIconColor = Colors.red;
   String username;
   SocketIO socketIO;
 
@@ -40,7 +40,7 @@ class ChatScreenState extends State<ChatScreen> {
               _actionIconColor = Colors.green;
               _actionIcon = new Icon(Icons.arrow_drop_up);
               _enabledUserText = true;
-              _userIconColor = Colors.blue;
+              _userIconColor = Colors.indigo;
               _inputHint = "Type a message";
             })
           }
@@ -48,9 +48,9 @@ class ChatScreenState extends State<ChatScreen> {
           {
             socketIO.disconnect(),
             _inputHint = "please connect first",
-            _actionIcon = new Icon(Icons.do_not_disturb),
+            _actionIcon = new Icon(Icons.cloud_off),
             _actionIconColor = Colors.red,
-            actions = "Estás desconectado.",
+            actions = "Estás desconectado, conectar",
             _userIconColor = Colors.black12,
             _enabledText = false,
             _enabledUserText = false
@@ -161,7 +161,7 @@ class ChatScreenState extends State<ChatScreen> {
 //user widget
   Widget _userComposerWidget() {
     return new IconTheme(
-      data: new IconThemeData(color: Colors.blue),
+      data: new IconThemeData(color: Colors.indigo),
       child: new Container(
         //input
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -190,6 +190,7 @@ class ChatScreenState extends State<ChatScreen> {
                           });
                           print("enabled user text state : ");
                         } else {
+                          _showToast(context,"Connect first");
                           print("icon disabled");
                         }
                       }),
@@ -198,7 +199,7 @@ class ChatScreenState extends State<ChatScreen> {
                 margin: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: new Switch(
                   value: _socketConnected,
-                  activeColor: Colors.blue,
+                  activeColor: Colors.indigo,
                   onChanged: _onSwitched,
                 ))
           ],
@@ -207,15 +208,15 @@ class ChatScreenState extends State<ChatScreen> {
     );
   }
 
-//action widget
+//actions widget
   Widget _actionsComposerWidget() {
     return new IconTheme(
       data: new IconThemeData(color: _actionIconColor),
       child: new Container(
         //input
-
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: new Row(
+        child:
+        new Row(
           children: <Widget>[
             new Container(
               margin: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -223,7 +224,15 @@ class ChatScreenState extends State<ChatScreen> {
             ),
             new Flexible(
               child: new Text(actions, style: new TextStyle(fontSize: 20.0)),
-            )
+            ),
+      if(!_socketConnected)
+      new Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: new IconTheme(
+          data: new IconThemeData(color: Colors.red),
+          child: new Icon(Icons.arrow_drop_up),
+        )
+      )
           ],
         ),
       ),
@@ -233,7 +242,7 @@ class ChatScreenState extends State<ChatScreen> {
 //input widget
   Widget _textComposerWidget() {
     return new IconTheme(
-      data: new IconThemeData(color: Colors.green),
+      data: new IconThemeData(color: Colors.teal),
       child: new Container(
         //input
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -305,6 +314,17 @@ class ChatScreenState extends State<ChatScreen> {
           child: _textComposerWidget(), //llamado a widget input
         ),
       ],
+    );
+  }
+
+  void _showToast(BuildContext context, String txt) {
+    final scaffold = Scaffold.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text(txt),
+        action: SnackBarAction(
+            label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+      ),
     );
   }
 }
