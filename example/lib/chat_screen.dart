@@ -23,7 +23,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   bool _enabledUserText = false;
   bool _enabledText = false;
-  String _inputHint = "Type a message";
+  String _inputHint = "please connect first";
   bool typing = false;
   Color _userIconColor = Colors.black12;
 
@@ -41,7 +41,7 @@ class ChatScreenState extends State<ChatScreen> {
               _actionIcon = new Icon(Icons.arrow_drop_up);
               _enabledUserText = true;
               _userIconColor = Colors.indigo;
-              _inputHint = "Type a message";
+              _inputHint = "please enter your username first";
             })
           }
         else
@@ -183,6 +183,7 @@ class ChatScreenState extends State<ChatScreen> {
                       onPressed: () {
                         if (_enabledUserText) {
                           _newUser(mUserController.text);
+                          _inputHint = "Type a message";
                           setState(() {
                             _enabledText = true;
                             _enabledUserText = !_enabledUserText;
