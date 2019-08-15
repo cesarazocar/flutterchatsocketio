@@ -1,7 +1,6 @@
 Flutter app Preview
 
-<img src="https://github.com/cesarazocar/flutterchatsocketio/blob/master/SS%20EnterUsername.png" width="250" title="Enter your Username and click the icon" alt="Enter your Username and click the icon"> 
-<img src="https://github.com/cesarazocar/flutterchatsocketio/blob/master/SS%20User%20Connected.png" width="250" title=" Welcome message" alt="Welcome message">
+<img src="https://github.com/cesarazocar/flutterchatsocketio/blob/master/SS%20EnterUsername.png" width="250" title="Enter your Username and click the icon" alt="Enter your Username and click the icon"> <img src="https://github.com/cesarazocar/flutterchatsocketio/blob/master/SS%20User%20Connected.png" width="250" title=" Welcome message" alt="Welcome message">
   </div>
   
 Receiving Events (Messages, users disconnected, new users, user typing...)
