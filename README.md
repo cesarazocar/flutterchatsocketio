@@ -13,7 +13,8 @@ Socket io NodeJS chat server <a href="https://github.com/cesarazocar/chatSocketN
 
 I was based on the following projects:
  <a href="https://github.com/WinkMeter/flutter_socket_io">Flutter SocketIo Library here.</a> 
- <a href=" https://github.com/iampawan/frenzychatapp">Chat app with material design.</a>
+ 
+ <a href="https://github.com/iampawan/frenzychatapp">Chat app with material design.</a>
  
 
 
