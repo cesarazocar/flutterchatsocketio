@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/services.dart';
 
 class SocketIO {
@@ -84,7 +85,6 @@ class SocketIO {
 
   /// Subscribe to a channel with a callback
   Future<void> subscribe(String event, Function callback) async {
-
     if (event != null && event.isNotEmpty) {
       CallbackFunctions functions = _callbacks[event];
       SocketIOFunction f;

@@ -10,6 +10,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class ChatScreenState extends State<ChatScreen> {
+
   final TextEditingController _textController = new TextEditingController();
   TextEditingController mUserController = new TextEditingController();
   final List<ChatMessage> _messages = <ChatMessage>[];
